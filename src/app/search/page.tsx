@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClockIcon, MapPinIcon, PhoneIcon, UserIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 
 interface VolunteerPlace {
   id: number;
@@ -154,7 +154,7 @@ const volunteers: Volunteer[] = [
   { id: 15, name: "Мурат Сулейменов", age: 16, phone: "+7 (737) 848-9595" },
 ];
 
-export default function SearchPage() {
+function SearchPageContent() {
     const searchParams = useSearchParams();
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [revealedInfo, setRevealedInfo] = useState<number[]>([]);
@@ -343,4 +343,12 @@ export default function SearchPage() {
       </div>
     </div>
   );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SearchPageContent />
+        </Suspense>
+    );
 }
