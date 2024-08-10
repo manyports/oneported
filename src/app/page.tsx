@@ -114,7 +114,7 @@ export default function Component() {
               ].map((item, index) => (
                 <Card key={index} className="flex flex-col h-full">
                   <CardHeader>
-                    <CardTitle className='text-[#8DE469]'>{item.title}</CardTitle>
+                    <CardTitle>{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow flex flex-col items-center justify-between">
                     <item.icon className="h-12 w-12 mb-4 text-[#8DE469]" />
