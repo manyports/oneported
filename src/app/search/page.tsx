@@ -41,7 +41,7 @@ export default function SearchPage() {
       
       <Tabs defaultValue="places" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="places">Места для волонтерства</TabsTrigger>
+          <TabsTrigger value="places">Места</TabsTrigger>
           <TabsTrigger value="volunteers">Волонтеры</TabsTrigger>
         </TabsList>
         
