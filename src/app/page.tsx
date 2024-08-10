@@ -75,7 +75,7 @@ export default function Component() {
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
             <h1 
-              className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text"
+              className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text text-[#8DE469]"
             >
               Соединяем волонтеров и организации
             </h1>
@@ -100,7 +100,7 @@ export default function Component() {
           <div className="grid gap-6 items-center">
             <div className="flex flex-col justify-center space-y-8 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Как это работает</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-[#8DE469]">Как это работает</h2>
                 <p className="max-w-[600px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400 mx-auto">
                   Наша платформа упрощает процесс поиска волонтеров и волонтерских возможностей.
                 </p>
@@ -114,10 +114,10 @@ export default function Component() {
               ].map((item, index) => (
                 <Card key={index} className="flex flex-col h-full">
                   <CardHeader>
-                    <CardTitle>{item.title}</CardTitle>
+                    <CardTitle className='text-[#8DE469]'>{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow flex flex-col items-center justify-between">
-                    <item.icon className="h-12 w-12 mb-4" />
+                    <item.icon className="h-12 w-12 mb-4 text-[#8DE469]" />
                     <CardDescription className="text-center">
                       {item.description}
                     </CardDescription>
@@ -133,7 +133,7 @@ export default function Component() {
           <div className="grid gap-6 items-center">
             <div className="flex flex-col justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Присоединяйтесь сегодня</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-[#8DE469]">Присоединяйтесь сегодня</h2>
                 <p className="max-w-[600px] mx-auto text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                   Станьте частью нашего сообщества и начните менять мир к лучшему.
                 </p>
