@@ -1,74 +1,12 @@
-"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Switch } from "@/components/ui/switch"
-import { HandIcon, SearchIcon, UserIcon, BuildingIcon, HandshakeIcon, MenuIcon, MoonIcon, SunIcon } from 'lucide-react'
+import { SearchIcon, UserIcon, BuildingIcon, HandshakeIcon } from 'lucide-react'
 
 export default function Component() {
-  const [isOpen, setIsOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
-
-  if (!mounted) {
-    return null
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-        <Link className="flex items-center justify-center" href="#">
-          <HandIcon className="h-6 w-6" />
-          <span className="ml-2 text-lg font-bold">ineedavolunteer</span>
-        </Link>
-        <div className="ml-auto flex items-center">
-          <nav className="hidden md:flex gap-6">
-            <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-              О нас
-            </Link>
-            <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-              Как это работает
-            </Link>
-            <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-              Контакты
-            </Link>
-          </nav>
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <MenuIcon className="h-6 w-6" />
-                <span className="sr-only">Открыть меню</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <nav className="flex flex-col gap-4">
-                <Link className="text-sm font-medium hover:underline underline-offset-4" href="#" onClick={() => setIsOpen(false)}>
-                  О нас
-                </Link>
-                <Link className="text-sm font-medium hover:underline underline-offset-4" href="#" onClick={() => setIsOpen(false)}>
-                  Как это работает
-                </Link>
-                <Link className="text-sm font-medium hover:underline underline-offset-4" href="#" onClick={() => setIsOpen(false)}>
-                  Контакты
-                </Link>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </header>
       <main className="flex-1">
       <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
         <div className="container px-4 md:px-6">
@@ -149,26 +87,6 @@ export default function Component() {
         </div>
       </section>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">© 2024 ineedavolunteer. Все права защищены.</p>
-        <nav className="sm:ml-auto flex items-center gap-4 sm:gap-6">
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Условия использования
-          </Link>
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Политика конфиденциальности
-          </Link>
-          <div className="flex items-center space-x-2">
-            <SunIcon className="h-4 w-4" />
-            <Switch
-              checked={theme === "dark"}
-              onCheckedChange={toggleTheme}
-              aria-label="Переключить тему"
-            />
-            <MoonIcon className="h-4 w-4" />
-          </div>
-        </nav>
-      </footer>
     </div>
   )
 }
