@@ -13,9 +13,26 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClockIcon, MapPinIcon, PhoneIcon, UserIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-const volunteerPlaces = [
+interface VolunteerPlace {
+  id: number;
+  name: string;
+  time: string;
+  phone: string;
+  address: string;
+  city: string;
+}
+
+interface Volunteer {
+  id: number;
+  name: string;
+  age: number;
+  phone: string;
+}
+
+const volunteerPlaces: VolunteerPlace[] = [
   {
     id: 1,
     name: "Mega Center Alma-Ata",
@@ -114,7 +131,7 @@ const volunteerPlaces = [
   },
 ];
 
-const volunteers = [
+const volunteers: Volunteer[] = [
   { id: 1, name: "Ерасыл Базарбаев", age: 16, phone: "+7 (111) 222-3333" },
   { id: 2, name: "Алимжан Жорабек", age: 16, phone: "+7 (444) 555-6666" },
   { id: 3, name: "Сериков Айжас", age: 16, phone: "+7 (777) 888-9999" },
@@ -138,33 +155,38 @@ const volunteers = [
 ];
 
 export default function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [revealedInfo, setRevealedInfo] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [revealedInfo, setRevealedInfo] = useState<number[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+  
+    useEffect(() => {
+      const q = searchParams.get('q');
+      if (q) {
+        setSearchTerm(q);
+      }
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+  
+      return () => clearTimeout(timer);
+    }, [searchParams]);
+  
+    const toggleReveal = (id: number) => {
+      setRevealedInfo((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      );
+    };
+  
+    const filterItems = <T extends Record<string, any>>(items: T[], term: string): T[] => {
+      return items.filter((item) =>
+        Object.values(item).some((value) =>
+          String(value).toLowerCase().includes(term.toLowerCase())
+        )
+      );
+    };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const toggleReveal = (id: number) => {
-    setRevealedInfo((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const filterItems = (items: any[], term: string) => {
-    return items.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(term.toLowerCase())
-      )
-    );
-  };
-
-  const PlaceSkeleton = () => (
+  const PlaceSkeleton: React.FC = () => (
     <Card>
       <CardHeader>
         <Skeleton className="h-4 w-3/4" />
@@ -179,7 +201,7 @@ export default function SearchPage() {
     </Card>
   );
 
-  const VolunteerSkeleton = () => (
+  const VolunteerSkeleton: React.FC = () => (
     <Card>
       <CardHeader>
         <Skeleton className="h-4 w-3/4" />
@@ -194,7 +216,10 @@ export default function SearchPage() {
     </Card>
   );
 
-  const renderContent = (items: any[], ItemComponent: React.FC<any>) => {
+  const renderContent = <T extends Record<string, any>>(
+    items: T[],
+    ItemComponent: React.FC<T>
+  ) => {
     const filteredItems = filterItems(items, searchTerm);
 
     if (filteredItems.length === 0) {
@@ -215,7 +240,7 @@ export default function SearchPage() {
     ));
   };
 
-  const PlaceCard = (place: any) => (
+  const PlaceCard: React.FC<VolunteerPlace> = (place) => (
     <Card>
       <CardHeader>
         <CardTitle>{place.name}</CardTitle>
@@ -245,7 +270,7 @@ export default function SearchPage() {
     </Card>
   );
 
-  const VolunteerCard = (volunteer: any) => (
+  const VolunteerCard: React.FC<Volunteer> = (volunteer) => (
     <Card>
       <CardHeader>
         <CardTitle>{volunteer.name}</CardTitle>
@@ -289,7 +314,9 @@ export default function SearchPage() {
               type="text"
               placeholder="Введите что-угодно для поиска, например 'Алматы', 'Базарбаев Ерасыл' и прочее"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchTerm(e.target.value)
+              }
             />
           </div>
 
