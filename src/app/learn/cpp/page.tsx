@@ -437,43 +437,6 @@ $ ./functions
           </li>
         </ul>
       </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4">
-          Работа с массивами
-        </h2>
-        <CodeBlock
-          code={`#include <iostream>
-using namespace std;
-
-int main() {
-    int numbers[5] = {1, 2, 3, 4, 5};
-
-    for (int i = 0; i < 5; i++) {
-        cout << numbers[i] << " ";
-    }
-    cout << endl;
-
-    return 0;
-}`}
-          output={`$ g++ arrays.cpp -o arrays
-$ ./arrays
-1 2 3 4 5`}
-        />
-        <p className="mb-4">
-          Массивы в C++ позволяют хранить несколько значений одного типа в одной
-          переменной:
-        </p>
-        <ul className="list-disc pl-6 mb-4">
-          <li>
-            <code>int numbers[5]</code>: Объявляет массив из пяти целых чисел.
-          </li>
-          <li>
-            <code>numbers[i]</code>: Обращение к элементу массива по индексу.
-          </li>
-        </ul>
-      </section>
-
       <section className="mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4">
           Введение в объекты и классы
