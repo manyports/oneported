@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Copy, Terminal } from "lucide-react";
+import { Codesandbox, Copy, Terminal } from "lucide-react";
 import { useState } from "react";
 
 export default function PythonTutorial() {
@@ -475,6 +475,28 @@ car.start()`}
             <code>car.start()</code>: Вызов метода объекта.
           </li>
         </ul>
+      </section>
+      <section className="mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+          Завершение и запуск программы
+        </h2>
+        <p className="mb-4">
+          Теперь вы знаете основы Python. Запуск программы выполняется напрямую
+          без компиляции.
+        </p>
+        <p className="mb-4">Чтобы запустить Python-скрипт:</p>
+        <ul className="list-disc pl-6 mb-4">
+          <li>
+            Сохраните код в файл с расширением <code>.py</code>, например{" "}
+            <code>example.py</code>.
+          </li>
+          <li>Откройте терминал и перейдите в каталог с файлом.</li>
+          <li>
+            Выполните команду:
+              <CodeBlock code={`python example.py`} output={`Это пример.`} />
+          </li>
+        </ul>
+        <p>Python автоматически выполнит код и выведет результат.</p>
       </section>
     </div>
   );
