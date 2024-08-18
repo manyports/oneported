@@ -30,6 +30,7 @@ export default function CPPTutorial() {
         <Button
           variant="outline"
           size="sm"
+          className="w-full sm:w-auto"
           onClick={() => copyToClipboard(code)}
         >
           <Copy className="h-4 w-4 mr-2" />
@@ -37,7 +38,7 @@ export default function CPPTutorial() {
         </Button>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Terminal className="h-4 w-4 mr-2" />
               Компилировать
             </Button>

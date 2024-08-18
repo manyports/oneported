@@ -30,6 +30,7 @@ export default function PythonTutorial() {
         <Button
           variant="outline"
           size="sm"
+          className="w-full sm:w-auto"
           onClick={() => copyToClipboard(code)}
         >
           <Copy className="h-4 w-4 mr-2" />
@@ -37,7 +38,7 @@ export default function PythonTutorial() {
         </Button>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Terminal className="h-4 w-4 mr-2" />
               Выполнить
             </Button>
@@ -493,7 +494,7 @@ car.start()`}
           <li>Откройте терминал и перейдите в каталог с файлом.</li>
           <li>
             Выполните команду:
-              <CodeBlock code={`python example.py`} output={`Это пример.`} />
+            <CodeBlock code={`python example.py`} output={`Это пример.`} />
           </li>
         </ul>
         <p>Python автоматически выполнит код и выведет результат.</p>
