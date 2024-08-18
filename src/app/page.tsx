@@ -20,7 +20,7 @@ export default function LandingPage() {
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    router.push(`/learn?q=${encodeURIComponent(searchQuery)}`);
   };
 
   return (
