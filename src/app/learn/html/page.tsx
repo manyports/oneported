@@ -116,7 +116,6 @@ export default function HTMLTutorial() {
   );
 
   return (
-    <ScrollArea className="h-[calc(100vh-4rem)] w-full">
       <div className="w-full max-w-3xl mx-auto px-4 py-6 lg:px-8">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">
           Полное руководство по HTML
@@ -343,6 +342,5 @@ export default function HTMLTutorial() {
           </p>
         </section>
       </div>
-    </ScrollArea>
   );
 }
