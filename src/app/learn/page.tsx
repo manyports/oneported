@@ -8,21 +8,15 @@ import {
 } from "@/components/ui/card";
 import { ChevronRight, Code, FileCode, FileJson, Palette } from "lucide-react";
 import Link from "next/link";
+import path from "path";
 
 const technologies = [
   {
-    name: "JavaScript",
-    icon: FileJson,
+    name: "HTML",
+    icon: FileCode,
     description:
-      "Изучите основы и продвинутые концепции JavaScript, включая асинхронное программирование, ES6+ функции и работу с DOM.",
-    path: "/learn/javascript",
-  },
-  {
-    name: "Next.js",
-    icon: ChevronRight,
-    description:
-      "Освойте разработку с использованием фреймворка Next.js, включая серверный рендеринг, роутинг и оптимизацию производительности.",
-    path: "/learn/nextjs",
+      "Изучите основы структурирования веб-страниц, семантическую верстку и работу с формами в HTML5.",
+    path: "/learn/html",
   },
   {
     name: "CSS",
@@ -32,6 +26,13 @@ const technologies = [
     path: "/learn/css",
   },
   {
+    name: "JavaScript",
+    icon: FileJson,
+    description:
+      "Освойте основы программирования на JavaScript, работу с DOM, асинхронные запросы и многое другое.",
+    path: "/learn/javascript",
+  },
+  {
     name: "React",
     icon: Code,
     description:
@@ -39,11 +40,18 @@ const technologies = [
     path: "/learn/react",
   },
   {
-    name: "HTML",
-    icon: FileCode,
+    name: "Next.js",
+    icon: ChevronRight,
     description:
-      "Изучите основы структурирования веб-страниц, семантическую верстку и работу с формами в HTML5.",
-    path: "/learn/html",
+      "Освойте разработку с использованием фреймворка Next.js, включая серверный рендеринг, роутинг и оптимизацию производительности.",
+    path: "/learn/nextjs",
+  },
+  {
+    name: "C++",
+    icon: ChevronRight,
+    description:
+      "Изучите основы и продвинутые концепции программирования на C++, включая управление памятью, объектно-ориентированное программирование и работу с шаблонами.",
+    path: "/learn/cpp",
   },
 ];
 
@@ -69,7 +77,7 @@ export default function Component() {
               <CardDescription className="mb-6 flex-grow">
                 {tech.description}
               </CardDescription>
-              <Link href={tech.path} className="mt-auto">
+              <Link href={tech.path || ""} className="mt-auto">
                 <Button className="w-full">
                   Обучиться
                   <ChevronRight className="ml-2 h-4 w-4" />
