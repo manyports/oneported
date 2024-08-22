@@ -99,6 +99,7 @@ export default function JavaScriptTutorial() {
           <Button
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
             onClick={() => copyToClipboard(code)}
           >
             <Copy className="h-4 w-4 mr-2" />
@@ -106,7 +107,7 @@ export default function JavaScriptTutorial() {
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Eye className="h-4 w-4 mr-2" />
                 Предпросмотр
               </Button>
