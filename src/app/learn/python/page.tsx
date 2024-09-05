@@ -88,7 +88,42 @@ export default function PythonTutorial() {
           </li>
         </ul>
       </section>
+      <section className="mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+          Использование запятых в функции <code>print()</code>
+        </h2>
+        <CodeBlock
+          code={`name = "Алиса"
+age = 30
 
+print("Имя:", name, "Возраст:", age)`}
+          output={`Имя: Алиса Возраст: 30`}
+        />
+        <p className="mb-4">
+          Функция <code>print()</code> в Python позволяет выводить на экран
+          несколько значений одновременно. Для этого можно использовать запятые,
+          чтобы разделить разные элементы. Python автоматически добавит пробелы
+          между элементами при выводе.
+        </p>
+        <ul className="list-disc pl-6 mb-4">
+          <li>
+            Вызов <code>print("Имя:", name, "Возраст:", age)</code> выводит
+            текст и значения переменных <code>name</code> и <code>age</code> с
+            пробелами между ними.
+          </li>
+          <li>
+            Запятые разделяют разные элементы, которые передаются в функцию{" "}
+            <code>print()</code>. Это может быть текстовые строки, числа,
+            переменные и другие объекты.
+          </li>
+        </ul>
+        <p className="mb-4">
+          Если нужно изменить разделитель между элементами, можно использовать
+          параметр <code>end</code> функции <code>print()</code>. Например,{" "}
+          <code>print("Привет", end=" - ")</code> выведет <code>Привет - </code>{" "}
+          без перехода на новую строку.
+        </p>
+      </section>
       <section className="mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4">
           Переменные и типы данных
