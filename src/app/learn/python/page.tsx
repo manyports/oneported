@@ -126,7 +126,48 @@ print(f"Студент: {'Да' if is_student else 'Нет'}")`}
           </li>
         </ul>
       </section>
+      <section className="mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+          Ввод данных с консоли
+        </h2>
+        <CodeBlock
+          code={`name = input("Введите ваше имя: ")
+age = int(input("Введите ваш возраст: "))
 
+print(f"Привет, {name}! Вам {age} лет.")`}
+          output={`Введите ваше имя: Алиса
+Введите ваш возраст: 30
+Привет, Алиса! Вам 30 лет.`}
+        />
+        <p className="mb-4">
+          В Python функция <code>input()</code> позволяет получать данные от
+          пользователя через консоль. По умолчанию, <code>input()</code>{" "}
+          возвращает данные в виде строки. Чтобы использовать введенные данные в
+          числовых вычислениях или других операциях, их нужно преобразовать в
+          нужный тип данных.
+        </p>
+        <ul className="list-disc pl-6 mb-4">
+          <li>
+            <code>input(prompt)</code>: Запрашивает ввод от пользователя,
+            показывая сообщение <code>prompt</code>.
+          </li>
+          <li>
+            <code>int()</code>: Преобразует строку в целое число. Например:{" "}
+            <code>age = int(input("Введите ваш возраст: "))</code>.
+          </li>
+          <li>
+            <code>float()</code>: Преобразует строку в число с плавающей точкой.
+            Например:{" "}
+            <code>temperature = float(input("Введите температуру: "))</code>.
+          </li>
+        </ul>
+        <p className="mb-4">
+          Важно помнить, что функция <code>input()</code> всегда возвращает
+          данные в виде строки. Если вам нужны числа, такие как целые или
+          дробные, используйте функции <code>int()</code> или{" "}
+          <code>float()</code> для преобразования строки в нужный тип данных.
+        </p>
+      </section>
       <section className="mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4">
           Условные операторы
