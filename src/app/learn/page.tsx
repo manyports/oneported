@@ -40,13 +40,6 @@ const technologies = [
     path: "/learn/react",
   },
   {
-    name: "Next.js",
-    icon: ChevronRight,
-    description:
-      "Освойте разработку с использованием фреймворка Next.js, включая серверный рендеринг, роутинг и оптимизацию производительности.",
-    path: "/learn/nextjs",
-  },
-  {
     name: "C++",
     icon: ChevronRight,
     description:
