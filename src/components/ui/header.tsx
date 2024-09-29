@@ -20,7 +20,7 @@ export default function Component() {
     { name: "Главная", icon: HomeIcon, href: "/" },
     { name: "Обучение", icon: BookOpenIcon, href: "/learn" },
     { name: "События", icon: CalendarIcon, href: "/events" },
-    { name: "Проекты", icon: FolderIcon, href: "/projects" },
+    { name: "Вступить в клуб", icon: FolderIcon, href: "/join" },
   ];
 
   return (
