@@ -6,11 +6,13 @@ import {
   BookOpen as BookOpenIcon,
   Calendar as CalendarIcon,
   Code as CodeIcon,
+  ContainerIcon,
   Folder as FolderIcon,
   Home as HomeIcon,
   Menu as MenuIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { Container } from "postcss";
 import { useState } from "react";
 
 export default function Component() {
@@ -20,6 +22,7 @@ export default function Component() {
     { name: "Главная", icon: HomeIcon, href: "/" },
     { name: "Обучение", icon: BookOpenIcon, href: "/learn" },
     { name: "События", icon: CalendarIcon, href: "/events" },
+    { name: "Утилиты", icon: ContainerIcon, href: "/tools" },
     { name: "Вступить в клуб", icon: FolderIcon, href: "/join" },
   ];
 
