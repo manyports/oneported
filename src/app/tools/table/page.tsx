@@ -114,6 +114,7 @@ export default function TracingTableGenerator() {
         styles: {
           font: "Roboto",
           fontSize: 10,
+          cellPadding: 4,
         },
         headStyles: {
           fillColor: [255, 255, 255],
