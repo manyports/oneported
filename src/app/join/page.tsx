@@ -24,6 +24,7 @@ import {
   BookOpen,
   Briefcase,
   Code,
+  Loader2,
   Send,
   Trophy,
   Users,
@@ -82,6 +83,7 @@ export default function JoinClubForm() {
   const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(
     null
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -97,6 +99,7 @@ export default function JoinClubForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await fetch("/api/submit", {
         method: "POST",
@@ -119,6 +122,7 @@ export default function JoinClubForm() {
       console.error("Ошибка:", error);
       setSubmitStatus("error");
     } finally {
+      setIsLoading(false);
       setIsDialogOpen(true);
     }
   };
@@ -244,9 +248,13 @@ export default function JoinClubForm() {
               className="bg-background resize-none"
             />
           </div>
-          <Button type="submit" className="w-full">
-            <Send className="w-4 h-4 mr-2" />
-            Отправить заявку
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4 mr-2" />
+            )}
+            {isLoading ? "Отправка..." : "Отправить заявку"}
           </Button>
         </form>
       </motion.div>

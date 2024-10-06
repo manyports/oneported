@@ -10,20 +10,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select";
 import {
   Award,
   BookOpen,
   Briefcase,
   Code,
+  Loader2,
   Send,
   Trophy,
   Users,
@@ -85,6 +86,8 @@ export default function MentorForm() {
     success: boolean;
     message: string;
   } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -99,6 +102,7 @@ export default function MentorForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await fetch("/api/submit-mentor", {
         method: "POST",
@@ -124,6 +128,7 @@ export default function MentorForm() {
         message: "Произошла ошибка при отправке формы",
       });
     } finally {
+      setIsLoading(false);
       setIsDialogOpen(true);
     }
   };
@@ -279,9 +284,13 @@ export default function MentorForm() {
               className="bg-background resize-none"
             />
           </div>
-          <Button type="submit" className="w-full">
-            <Send className="w-4 h-4 mr-2" />
-            Отправить заявку
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4 mr-2" />
+            )}
+            {isLoading ? "Отправка..." : "Отправить заявку"}
           </Button>
         </form>
       </motion.div>
