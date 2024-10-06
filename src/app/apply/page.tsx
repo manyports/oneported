@@ -10,13 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import {
@@ -28,7 +21,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 
 const formatPhoneNumber = (value: string) => {
   if (!value) return value;
@@ -66,23 +59,24 @@ const formatPhoneNumber = (value: string) => {
   }
 };
 
-export default function JoinClubForm() {
+export default function MentorForm() {
   const initialFormState = {
     lastName: "",
     firstName: "",
-    phone: "+7 ",
-    school: "",
-    class: "",
-    programmingBackground: "",
-    bio: "",
+    email: "",
+    phone: "",
+    github: "",
+    itExperience: "",
+    mentoringExperience: "",
+    generalExperience: "",
   };
 
   const [formData, setFormData] = useState(initialFormState);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(
-    null
-  );
-
+  const [submitStatus, setSubmitStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -98,7 +92,7 @@ export default function JoinClubForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("", {
+      const response = await fetch("/api/submit-mentor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,18 +100,21 @@ export default function JoinClubForm() {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result.message);
-        setSubmitStatus("success");
+      const data = await response.json();
+
+      setSubmitStatus({
+        success: data.success,
+        message: data.message,
+      });
+
+      if (data.success) {
         setFormData(initialFormState);
-      } else {
-        console.error("Ошибка при отправке");
-        setSubmitStatus("error");
       }
     } catch (error) {
-      console.error("Ошибка:", error);
-      setSubmitStatus("error");
+      setSubmitStatus({
+        success: false,
+        message: "Произошла ошибка при отправке формы",
+      });
     } finally {
       setIsDialogOpen(true);
     }
@@ -132,7 +129,7 @@ export default function JoinClubForm() {
       >
         <h1 className="text-4xl font-bold mb-2 text-center">OnePorted</h1>
         <p className="text-lg mb-12 text-center text-muted-foreground">
-          Присоединяйтесь к нам
+          Присоединяйтесь к нам в качестве ментора
         </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -166,6 +163,21 @@ export default function JoinClubForm() {
             </div>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium">
+              Email
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="your@email.com"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              className="bg-background"
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="phone" className="text-sm font-medium">
               Номер телефона
             </Label>
@@ -180,66 +192,61 @@ export default function JoinClubForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="school" className="text-sm font-medium">
-              Школа
-            </Label>
-            <Select
-              name="school"
-              value={formData.school}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, school: value }))
-              }
-            >
-              <SelectTrigger id="school" className="bg-background">
-                <SelectValue placeholder="Выберите школу" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semey">НИШ ФМН г. Семей</SelectItem>
-                <SelectItem value="shymkent">НИШ ФМН г. Шымкент</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="class" className="text-sm font-medium">
-              Класс
+            <Label htmlFor="github" className="text-sm font-medium">
+              Ссылка на GitHub (необязательно)
             </Label>
             <Input
-              id="class"
-              name="class"
-              placeholder="Например, 10А"
-              value={formData.class}
+              id="github"
+              name="github"
+              placeholder="https://github.com/username"
+              value={formData.github}
               onChange={handleInputChange}
-              required
               className="bg-background"
             />
           </div>
           <div className="space-y-2">
-            <Label
-              htmlFor="programmingBackground"
-              className="text-sm font-medium"
-            >
-              Опыт в программировании
+            <Label htmlFor="itExperience" className="text-sm font-medium">
+              Опыт в IT
             </Label>
             <Textarea
-              id="programmingBackground"
-              name="programmingBackground"
-              placeholder="Расскажите о вашем опыте в программировании"
-              value={formData.programmingBackground}
+              id="itExperience"
+              name="itExperience"
+              placeholder="Расскажите о вашем опыте работы в IT"
+              value={formData.itExperience}
+              onChange={handleInputChange}
+              required
+              rows={4}
+              className="bg-background resize-none"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label
+              htmlFor="mentoringExperience"
+              className="text-sm font-medium"
+            >
+              Опыт в менторстве
+            </Label>
+            <Textarea
+              id="mentoringExperience"
+              name="mentoringExperience"
+              placeholder="Расскажите о вашем опыте в менторстве, если есть"
+              value={formData.mentoringExperience}
               onChange={handleInputChange}
               rows={4}
               className="bg-background resize-none"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bio" className="text-sm font-medium">
-              О себе
+            <Label htmlFor="generalExperience" className="text-sm font-medium">
+              Общий опыт
             </Label>
             <Textarea
-              id="bio"
-              name="bio"
-              placeholder="Расскажите немного о себе и ваших целях"
-              value={formData.bio}
+              id="generalExperience"
+              name="generalExperience"
+              placeholder="Расскажите о вашем общем опыте и навыках"
+              value={formData.generalExperience}
               onChange={handleInputChange}
+              required
               rows={4}
               className="bg-background resize-none"
             />
@@ -257,43 +264,43 @@ export default function JoinClubForm() {
         className="mt-12"
       >
         <h2 className="text-xl font-semibold mb-4 text-center">
-          Почему OnePorted?
+          Почему стать ментором в OnePorted?
         </h2>
         <ul className="space-y-4">
           <li className="flex items-center space-x-3">
             <Code className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">
-              Изучение современных технологий веб-разработки
+              Делитесь своими знаниями и опытом в IT
             </span>
           </li>
           <li className="flex items-center space-x-3">
             <Users className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">
-              Практические проекты и работа в команде
+              Помогайте молодым талантам развиваться
             </span>
           </li>
           <li className="flex items-center space-x-3">
             <Award className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">
-              Менторство от опытных разработчиков
+              Развивайте свои лидерские и коммуникативные навыки
             </span>
           </li>
           <li className="flex items-center space-x-3">
             <Trophy className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">
-              Участие в хакатонах и конкурсах
+              Получите классный extracurricular activity
             </span>
           </li>
           <li className="flex items-center space-x-3">
             <BookOpen className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">
-              Создание собственного портфолио
+              Постоянно учитесь новому в процессе обучения других
             </span>
           </li>
           <li className="flex items-center space-x-3">
             <Briefcase className="w-5 h-5 text-primary" />
             <span className="text-muted-foreground">
-              Подготовка к будущей карьере в IT
+              Расширяйте свою профессиональную сеть в IT-сообществе
             </span>
           </li>
         </ul>
@@ -302,17 +309,15 @@ export default function JoinClubForm() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {submitStatus === "success"
-                ? "Спасибо за заполнение!"
-                : "Ошибка отправки"}
+              {submitStatus?.success ? "Спасибо за заявку!" : "Ошибка отправки"}
             </DialogTitle>
             <DialogDescription>
-              {submitStatus === "success" ? (
+              {submitStatus?.success ? (
                 <>
-                  <p>Ждем тебя в клубе OnePorted! 🎉</p>
+                  <p>Мы рады, что вы хотите стать ментором в OnePorted! 🎉</p>
                   <p className="mt-2">
-                    Мы свяжемся с тобой в ближайшее время для дальнейших
-                    инструкций.
+                    Мы рассмотрим вашу заявку и свяжемся с вами в ближайшее
+                    время.
                   </p>
                 </>
               ) : (
