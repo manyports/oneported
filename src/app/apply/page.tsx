@@ -13,6 +13,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
+import {
   Award,
   BookOpen,
   Briefcase,
@@ -64,7 +71,8 @@ export default function MentorForm() {
     lastName: "",
     firstName: "",
     email: "",
-    phone: "",
+    phone: "+7 ",
+    school: "",
     github: "",
     itExperience: "",
     mentoringExperience: "",
@@ -190,6 +198,26 @@ export default function MentorForm() {
               required
               className="bg-background"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="school" className="text-sm font-medium">
+              Школа
+            </Label>
+            <Select
+              name="school"
+              value={formData.school}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, school: value }))
+              }
+            >
+              <SelectTrigger id="school" className="bg-background">
+                <SelectValue placeholder="Выберите школу" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="semey">НИШ ФМН г. Семей</SelectItem>
+                <SelectItem value="shymkent">НИШ ФМН г. Шымкент</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="github" className="text-sm font-medium">

@@ -1,3 +1,4 @@
+// app/api/submit-mentor/route.ts
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,6 +13,7 @@ const MentorSchema = new mongoose.Schema({
   firstName: String,
   email: String,
   phone: String,
+  school: String,
   github: String,
   itExperience: String,
   mentoringExperience: String,
