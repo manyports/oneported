@@ -98,7 +98,7 @@ export default function JoinClubForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("", {
+      const response = await fetch("/api/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
