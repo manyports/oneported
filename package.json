@@ -32,6 +32,7 @@
     "next-themes": "^0.3.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-simple-typewriter": "^5.0.1",
     "react-typing-effect": "^2.0.5",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7"
