@@ -206,7 +206,7 @@ export default function Component() {
             <p className="text-neutral-400 mb-8">
               Регистрация открыта до 1 декабря. Количество мест ограничено!
             </p>
-            <Button className="bg-white text-black hover:bg-neutral-200 border">
+            <Button className="bg-white text-black hover:bg-neutral-200 border" onClick={() => window.location.href = "/hackathon/register"}>
               Зарегистрироваться
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
