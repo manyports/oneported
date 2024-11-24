@@ -91,7 +91,10 @@ export default function Component() {
           </motion.div>
 
           <div className="flex gap-4">
-            <Button className="bg-white text-black hover:bg-neutral-200">
+            <Button
+              className="bg-white text-black hover:bg-neutral-200"
+              onClick={() => window.location.href = "/hackathon/register"}
+            >
               Регистрация
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
