@@ -60,7 +60,7 @@ const questions: Question[] = [
     question: "Сколько человек в вашей команде? (включая вас)",
     type: "select",
     required: true,
-    options: ["2", "3", "4", "5"],
+    options: ["2", "3"],
   }
 ];
 

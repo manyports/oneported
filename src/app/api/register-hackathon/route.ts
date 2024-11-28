@@ -44,6 +44,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     await dbConnect();
     const body = await req.json();
 
+    const teamSize = parseInt(body[7]);
+    if (teamSize > 3) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Максимальный размер команды - 3 человека",
+        },
+        { status: 400 }
+      );
+    }
+
     const teamData = {
       captainName: body[1],
       captainEmail: body[2],
