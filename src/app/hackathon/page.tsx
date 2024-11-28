@@ -121,7 +121,7 @@ export default function Component() {
               <MessageBubble>Хакатон пройдет с 2 по 9 декабря</MessageBubble>
               <MessageBubble>
                 <div className="text-2xl font-bold">
-                  <AnimatedCounter value="50000" duration={2000} /> ₸
+                  Ценные призы
                 </div>
                 <div className="text-neutral-400">Призовой фонд</div>
               </MessageBubble>
