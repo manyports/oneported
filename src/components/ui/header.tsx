@@ -94,13 +94,13 @@ export default function Component() {
               
               <div className="mt-8 flex items-center gap-4 px-2">
                 <Link 
-                  href="https://instagram.com" 
+                  href="https://instagram.com/oneported" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Instagram className="h-5 w-5" />
                 </Link>
                 <Link 
-                  href="https://github.com" 
+                  href="https://github.com/manyports" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Github className="h-5 w-5" />
