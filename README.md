@@ -62,8 +62,8 @@ The code is licensed under the **MIT License**, meaning that anyone can use, mod
 
 ### Contributing
 
-We welcome contributions! Feel free to open issues or submit pull requests to enhance the platform.
+Feel free to open issues or submit pull requests to enhance the platform.
 
-For any questions or support, please reach out to us via the project's repository.
+For any questions or support, please reach out to me via my socials.
 
 Happy coding! 🚀
