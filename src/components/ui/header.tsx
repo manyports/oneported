@@ -23,7 +23,7 @@ export default function Component() {
   const leftMenuItems = [
     { name: "Главная", icon: HomeIcon, href: "/" },
     { name: "Обучение", icon: BookOpenIcon, href: "/learn" },
-    { name: "События", icon: CalendarIcon, href: "/events" },
+    { name: "События", icon: CalendarIcon, href: "/hackathon" },
   ];
 
   const rightMenuItems = [

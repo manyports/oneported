@@ -26,6 +26,13 @@ const technologies = [
       "Создайте свою трассировочную таблицу и сделайте экспорт в PDF за считанные клики!",
     path: "/tools/table",
   },
+  {
+    name: "Редактор HTML, CSS, JS",
+    icon: Code,
+    description:
+      "Работайте на редакторе кода, который поддерживает HTML, CSS и JS. Сохраняйте свои проекты и делитесь ими с друзьями!",
+    path: "/tools/code"
+  }
 ];
 
 export default function Component() {
