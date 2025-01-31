@@ -1105,7 +1105,7 @@ export default function Component() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-20">
       <Card className="w-full max-w-2xl">
         <CardHeader className="space-y-1">
           <div className="flex items-center space-x-2">

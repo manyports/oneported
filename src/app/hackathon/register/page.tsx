@@ -227,7 +227,7 @@ export default function RegisterForm() {
 
   if (submitStatus) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center pt-20 md:pt-20">
         <div className="text-center space-y-4">
           {submitStatus === "success" && (
             <motion.div

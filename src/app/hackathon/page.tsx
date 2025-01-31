@@ -76,7 +76,7 @@ export default function Component() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background">
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background pt-20 md:pt-20">
       <div className="max-w-6xl mx-auto px-4 py-20">
         <header className="space-y-8 mb-20">
           <motion.div

@@ -145,7 +145,7 @@ export default function TracingTableGenerator() {
   const canScrollRight = visibleColumnStart + 3 < headers.length;
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-12 mb-12">
+    <Card className="w-full max-w-4xl mx-auto mt-32 mb-12">
       <CardHeader>
         <CardTitle className="text-xl sm:text-2xl font-bold">
           Генератор трассировочных таблиц

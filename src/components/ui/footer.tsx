@@ -51,7 +51,7 @@ export default function Footer(){
                     </div>
                 </div>
                 <div className="mt-8 text-center text-sm text-gray-500">
-                    © 2024 OnePorted. Все права защищены.
+                    © {new Date().getFullYear()} OnePorted. Все права защищены.
                 </div>
             </div>
         </footer>

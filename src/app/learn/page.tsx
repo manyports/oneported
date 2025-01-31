@@ -57,7 +57,7 @@ const technologies = [
 
 export default function Component() {
   return (
-    <div className="container mx-auto py-12">
+    <div className="container mx-auto py-12 pt-28">
       <h1 className="text-4xl font-bold mb-12 text-center">
         Обучение:
       </h1>

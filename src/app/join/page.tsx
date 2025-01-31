@@ -128,7 +128,7 @@ export default function JoinClubForm() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-xl">
+    <div className="container mx-auto px-4 py-16 max-w-xl mt-20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
