@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Page() {
   const containerRef = useRef(null)
@@ -94,12 +95,16 @@ export default function Page() {
             Проекты, ресурсы, и ментора для каждого. Начни уже сегодня
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link href="/learn">
             <Button size="lg" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
               Почитать Ресурсы
             </Button>
+          </Link>
+          <Link href="/join">
             <Button size="lg" variant="outline" className="rounded-full border-border bg-secondary text-secondary-foreground">
               Вступить в клуб
             </Button>
+          </Link>
           </div>
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24 md:mb-32">
@@ -234,10 +239,12 @@ export default function Page() {
           <p className="text-muted-foreground mb-6 md:mb-8 text-sm md:text-base">
             Вступите в наше коммьюнити сегодня и возвысте свои навыки на новый уровень
           </p>
+          <Link href="/join">
           <Button size="lg" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
             Начать сейчас
             <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
+          </Link>
         </motion.div>
         <div className="text-center">
           <Button
