@@ -392,220 +392,229 @@ export default function AdvancedEditor() {
   const isPhpFile = currentFile?.type === "php"
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-background text-foreground pt-20 md:pt-20">
-      <AnimatePresence>
-        {sidebarVisible && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="border-b lg:border-r flex flex-col w-full lg:w-64 bg-card"
-          >
-            <div className="h-[72px] flex items-center justify-between px-4 border-b">
-              <span className="font-medium">Файлы</span>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48" sideOffset={8}>
-                  <AnimatePresence>
-                    {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type, index) => (
+    <div className="flex flex-col h-screen bg-background text-foreground pt-20 md:pt-20">
+      <div className="flex flex-col md:flex-row flex-1 h-[calc(100vh-5rem)]">
+        <AnimatePresence>
+          {sidebarVisible && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "auto", opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              className="border-b md:border-r flex flex-col w-full md:w-64 bg-card"
+            >
+              <div className="h-[72px] flex items-center justify-between px-4 border-b">
+                <span className="font-medium">Файлы</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48" sideOffset={8}>
+                    <AnimatePresence>
+                      {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type, index) => (
+                        <motion.div
+                          key={type}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <DropdownMenuItem onClick={() => addFile(type)}>
+                            {getFileIcon(type)}
+                            Новый {type.toUpperCase()} Файл
+                          </DropdownMenuItem>
+                        </motion.div>
+                      ))}
                       <motion.div
-                        key={type}
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: 5 * 0.05 }}
                       >
-                        <DropdownMenuItem onClick={() => addFile(type)}>
-                          {getFileIcon(type)}
-                          Новый {type.toUpperCase()} Файл
+                        <DropdownMenuItem onClick={() => addDirectory()}>
+                          <FolderIcon className="w-4 h-4 mr-2" />
+                          Новая директория
                         </DropdownMenuItem>
                       </motion.div>
-                    ))}
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ delay: 5 * 0.05 }}
-                    >
-                      <DropdownMenuItem onClick={() => addDirectory()}>
+                    </AnimatePresence>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex-1 overflow-auto p-2">
+                {getDirectories().map((dir) => (
+                  <div key={dir} className="mb-4">
+                    <div className="flex items-center justify-between px-2 py-1 text-sm text-muted-foreground">
+                      <div className="flex items-center">
                         <FolderIcon className="w-4 h-4 mr-2" />
-                        Новая директория
-                      </DropdownMenuItem>
-                    </motion.div>
-                  </AnimatePresence>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div className="flex-1 overflow-auto p-2">
-              {getDirectories().map((dir) => (
-                <div key={dir} className="mb-4">
-                  <div className="flex items-center justify-between px-2 py-1 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <FolderIcon className="w-4 h-4 mr-2" />
-                      {dir || "Root"}
-                    </div>
-                    <div className="flex items-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type) => (
-                            <DropdownMenuItem key={type} onClick={() => addFile(type, dir)}>
-                              {getFileIcon(type)}
-                              Новый {type.toUpperCase()} Файл
+                        {dir || "Root"}
+                      </div>
+                      <div className="flex items-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type) => (
+                              <DropdownMenuItem key={type} onClick={() => addFile(type, dir)}>
+                                {getFileIcon(type)}
+                                Новый {type.toUpperCase()} Файл
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuItem onClick={() => addDirectory(dir)}>
+                              <FolderIcon className="w-4 h-4 mr-2" />
+                              Новая директория
                             </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuItem onClick={() => addDirectory(dir)}>
-                            <FolderIcon className="w-4 h-4 mr-2" />
-                            Новая директория
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 ml-1"
-                        onClick={() => {
-                          const dirFile = files.find((f) => f.directory === dir && f.name === ".directory")
-                          if (dirFile) {
-                            setFileToDelete(dirFile.id)
-                            setShowDeleteConfirm(true)
-                          }
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 ml-1"
+                          onClick={() => {
+                            const dirFile = files.find((f) => f.directory === dir && f.name === ".directory")
+                            if (dirFile) {
+                              setFileToDelete(dirFile.id)
+                              setShowDeleteConfirm(true)
+                            }
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      {files
+                        .filter((f) => f.directory === dir && f.name !== ".directory")
+                        .map((file) => (
+                          <div key={file.id} className="flex items-center justify-between group">
+                            <button
+                              onClick={() => setActiveFile(file.id)}
+                              className={cn(
+                                "flex items-center w-full px-2 py-1 text-sm rounded-md",
+                                activeFile === file.id ? "bg-accent text-accent-foreground" : "hover:bg-muted/50",
+                              )}
+                            >
+                              {getFileIcon(file.type)}
+                              {file.name}
+                            </button>
+                            <FileActions
+                              file={file}
+                              onRename={renameFile}
+                              onDelete={() => {
+                                setFileToDelete(file.id)
+                                setShowDeleteConfirm(true)
+                              }}
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
-                  <div className="ml-4">
-                    {files
-                      .filter((f) => f.directory === dir && f.name !== ".directory")
-                      .map((file) => (
-                        <div key={file.id} className="flex items-center justify-between group">
-                          <button
-                            onClick={() => setActiveFile(file.id)}
-                            className={cn(
-                              "flex items-center w-full px-2 py-1 text-sm rounded-md",
-                              activeFile === file.id ? "bg-accent text-accent-foreground" : "hover:bg-muted/50",
-                            )}
-                          >
-                            {getFileIcon(file.type)}
-                            {file.name}
-                          </button>
-                          <FileActions
-                            file={file}
-                            onRename={renameFile}
-                            onDelete={() => {
-                              setFileToDelete(file.id)
-                              setShowDeleteConfirm(true)
-                            }}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <div className="flex-1 flex flex-col lg:flex-row">
-        <div className="flex-1 flex flex-col h-[calc(50vh-36px)] lg:h-auto">
-          <div className="h-[72px] flex items-center px-4 border-b bg-card">
-            <Button variant="ghost" size="sm" onClick={() => setSidebarVisible(!sidebarVisible)} className="mr-4">
-              {sidebarVisible ? <ChevronLeft /> : <ChevronRight />}
-            </Button>
-            <span className="flex-grow">{files.find((f) => f.id === activeFile)?.name}</span>
-            {isPhpFile && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => compileContent().catch(console.error)}
-                className="mr-4"
-                disabled={isPhpRunning}
-              >
-                {isPhpRunning ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
-                    Running...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 mr-2" />
-                    Run PHP
-                  </>
-                )}
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex flex-col flex-1 min-h-0">
+          <div className="flex flex-col h-[60vh] md:h-full md:flex-1">
+            <div className="h-[72px] flex items-center px-4 border-b bg-card">
+              <Button variant="ghost" size="sm" onClick={() => setSidebarVisible(!sidebarVisible)} className="mr-4">
+                {sidebarVisible ? <ChevronLeft /> : <ChevronRight />}
               </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={exportProject} className="ml-4">
-              <Download className="w-4 h-4 mr-2" />
-              Экспортировать проект
-            </Button>
+              <span className="flex-grow truncate">{files.find((f) => f.id === activeFile)?.name}</span>
+              <div className="flex items-center gap-2">
+                {isPhpFile && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => compileContent().catch(console.error)}
+                    className="shrink-0"
+                    disabled={isPhpRunning}
+                  >
+                    {isPhpRunning ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
+                        <span className="hidden sm:inline">Работаем...</span>
+                        <span className="sm:hidden">...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Запустить PHP</span>
+                        <span className="sm:hidden">Run</span>
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={exportProject} className="shrink-0">
+                  <Download className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Экспортировать</span>
+                  <span className="sm:hidden">Экспорт</span>
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 min-h-0">
+              {files.map(
+                (file) =>
+                  file.id === activeFile && (
+                    <Editor
+                      key={file.id}
+                      height="100%"
+                      language={file.type}
+                      value={file.content}
+                      onChange={handleFileChange}
+                      theme={appTheme === "dark" ? "vs-dark" : "light"}
+                      loading={<EditorLoading />}
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        lineHeight: 21,
+                        padding: { top: 16, left: 20 },
+                        fontFamily: "Geist Mono, monospace",
+                        lineNumbers: "on",
+                        glyphMargin: false,
+                        folding: false,
+                        lineDecorationsWidth: 16,
+                        lineNumbersMinChars: 6,
+                        renderLineHighlight: "none",
+                        scrollbar: {
+                          vertical: "visible",
+                          horizontal: "visible",
+                          verticalScrollbarSize: 8,
+                          horizontalScrollbarSize: 8,
+                        },
+                      }}
+                      className="border-0"
+                    />
+                  ),
+              )}
+            </div>
           </div>
-          <div className="flex-1">
-            {files.map(
-              (file) =>
-                file.id === activeFile && (
-                  <Editor
-                    key={file.id}
-                    height="100%"
-                    language={file.type}
-                    value={file.content}
-                    onChange={handleFileChange}
-                    theme={appTheme === "dark" ? "vs-dark" : "light"}
-                    loading={<EditorLoading />}
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      lineHeight: 21,
-                      padding: { top: 16, left: 20 },
-                      fontFamily: "Geist Mono, monospace",
-                      lineNumbers: "on",
-                      glyphMargin: false,
-                      folding: false,
-                      lineDecorationsWidth: 16,
-                      lineNumbersMinChars: 6,
-                      renderLineHighlight: "none",
-                      scrollbar: {
-                        vertical: "visible",
-                        horizontal: "visible",
-                        verticalScrollbarSize: 8,
-                        horizontalScrollbarSize: 8,
-                      },
-                    }}
-                    className="border-0"
-                  />
-                ),
-            )}
+
+          <div className="flex flex-col h-[40vh] md:h-full border-t md:border-l">
+            <div className="h-[72px] flex items-center justify-between px-4 border-b bg-card">
+              <span className="text-sm text-muted-foreground">Preview</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-sm font-medium cursor-help">{previewInfo.title}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{previewInfo.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <iframe
+              ref={iframeRef}
+              title="Preview"
+              srcDoc={compiledContent}
+              className="flex-1 w-full border-none bg-white"
+            />
           </div>
-        </div>
-        <div className="w-full lg:w-1/2 border-t lg:border-l flex flex-col h-[calc(50vh-36px)] lg:h-auto">
-          <div className="h-[72px] flex items-center justify-between px-4 border-b bg-card">
-            <span className="text-sm text-muted-foreground">Preview</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="text-sm font-medium cursor-help">{previewInfo.title}</div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{previewInfo.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <iframe
-            ref={iframeRef}
-            title="Preview"
-            srcDoc={compiledContent}
-            className="flex-1 w-full border-none bg-white"
-          />
         </div>
       </div>
       <DeleteConfirmDialog
