@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { FileIcon, FolderIcon, Plus, ChevronLeft, ChevronRight, X, MoreVertical, Download } from "lucide-react"
+import { FileIcon, FolderIcon, Plus, ChevronLeft, ChevronRight, X, MoreVertical, Download, Play } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import JSZip from "jszip"
 import { useTheme } from "next-themes"
 
-type FileType = "html" | "css" | "js" | "md" | "txt"
+type FileType = "html" | "css" | "js" | "md" | "txt" | "php"
 
 interface FileData {
   id: string
@@ -38,6 +38,28 @@ const defaultHtmlContent = `<!DOCTYPE html>
   <script src="script.js"></script>
 </body>
 </html>`
+
+const executePHP = async (code: string) => {
+  try {
+    const response = await fetch('/api/php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    })
+    
+    const data = await response.json()
+    
+    return {
+      output: data.output || '',
+      error: data.error || ''
+    }
+  } catch (error) {
+    return {
+      output: '',
+      error: `Failed to execute PHP code: ${error}`
+    }
+  }
+}
 
 export default function AdvancedEditor() {
   const { theme: appTheme } = useTheme()
@@ -71,10 +93,24 @@ export default function AdvancedEditor() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [fileToDelete, setFileToDelete] = useState<string | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [phpOutput, setPhpOutput] = useState<string>("")
+  const [isPhpRunning, setIsPhpRunning] = useState(false)
 
   useEffect(() => {
-    const cleanup = compileContent()
-    return cleanup
+    let cleanup: (() => void) | undefined
+    
+    const compile = async () => {
+      const currentFile = files.find(f => f.id === activeFile)
+      if (currentFile?.type !== 'php') {
+        cleanup = await compileContent()
+      }
+    }
+    
+    compile()
+    
+    return () => {
+      if (cleanup) cleanup()
+    }
   }, [activeFile])
 
   useEffect(() => {
@@ -89,27 +125,152 @@ export default function AdvancedEditor() {
     }
   }, [activeFile, files])
 
-  const compileContent = (currentFiles = files) => {
+  const compileContent = async (currentFiles = files) => {
+    const phpFiles = currentFiles.filter(f => f.type === "php")
+    const activePhpFile = phpFiles.find(f => f.id === activeFile)
+
+    if (activePhpFile) {
+      setIsPhpRunning(true)
+      try {
+        const { output, error } = await executePHP(activePhpFile.content)
+        
+        const isHtmlOutput = output.trim().match(/^<!DOCTYPE|^<html/i)
+        
+        if (isHtmlOutput && !error) {
+          const cssFile = currentFiles.find((f) => f.type === "css")
+          if (cssFile) {
+            const cssBlob = new Blob([cssFile.content], { type: "text/css" })
+            const cssUrl = URL.createObjectURL(cssBlob)
+            
+            const modifiedOutput = output.replace(
+              /<\/head>/i,
+              `<link rel="stylesheet" href="${cssUrl}" /></head>`
+            )
+            
+            setCompiledContent(modifiedOutput)
+            return () => {
+              URL.revokeObjectURL(cssUrl)
+            }
+          } else {
+            setCompiledContent(output)
+            return () => {}
+          }
+        } else {
+          setCompiledContent(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <style>
+                  body { 
+                    font-family: monospace; 
+                    padding: 20px; 
+                    margin: 0;
+                    background: #f5f5f5;
+                  }
+                  .output, .error { 
+                    background: white;
+                    padding: 15px;
+                    border-radius: 4px;
+                    border: 1px solid #eaeaea;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    margin-bottom: 10px;
+                  }
+                  .error {
+                    color: #ff0000;
+                    border-color: #ffcdd2;
+                    background: #fff5f5;
+                  }
+                  .output:empty,
+                  .error:empty {
+                    display: none;
+                  }
+                  .label {
+                    font-weight: bold;
+                    color: #666;
+                    margin-bottom: 5px;
+                  }
+                </style>
+              </head>
+              <body>
+                ${error ? `
+                  <div class="label">Error:</div>
+                  <pre class="error">${error}</pre>
+                ` : ''}
+                ${output ? `
+                  <div class="label">Output:</div>
+                  <pre class="output">${output}</pre>
+                ` : ''}
+                ${!error && !output ? `
+                  <div class="output">No output</div>
+                ` : ''}
+              </body>
+            </html>
+          `)
+        }
+        return () => {}
+      } catch (error) {
+        setCompiledContent(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { 
+                  font-family: monospace; 
+                  padding: 20px;
+                  margin: 0;
+                  background: #f5f5f5;
+                }
+                .error { 
+                  color: #ff0000;
+                  background: #fff5f5;
+                  padding: 15px;
+                  border-radius: 4px;
+                  border: 1px solid #ffcdd2;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="error">Failed to execute PHP code: ${error}</div>
+            </body>
+          </html>
+        `)
+        return () => {}
+      } finally {
+        setIsPhpRunning(false)
+      }
+    }
+
     const htmlFile = currentFiles.find((f) => f.type === "html")
     const cssFile = currentFiles.find((f) => f.type === "css")
     const jsFile = currentFiles.find((f) => f.type === "js")
 
-    let compiledHtml = htmlFile ? htmlFile.content : defaultHtmlContent
+    let cssUrl = ""
+    let jsUrl = ""
+    let cssBlob: Blob | null = null
+    let jsBlob: Blob | null = null
 
-    const cssBlob = cssFile ? new Blob([cssFile.content], { type: "text/css" }) : null
-    const cssUrl = cssBlob ? URL.createObjectURL(cssBlob) : ""
+    try {
+      cssBlob = cssFile ? new Blob([cssFile.content], { type: "text/css" }) : null
+      cssUrl = cssBlob ? URL.createObjectURL(cssBlob) : ""
 
-    const jsBlob = jsFile ? new Blob([jsFile.content], { type: "application/javascript" }) : null
-    const jsUrl = jsBlob ? URL.createObjectURL(jsBlob) : ""
+      jsBlob = jsFile ? new Blob([jsFile.content], { type: "application/javascript" }) : null
+      jsUrl = jsBlob ? URL.createObjectURL(jsBlob) : ""
 
-    compiledHtml = compiledHtml.replace('href="styles.css"', `href="${cssUrl}"`)
-    compiledHtml = compiledHtml.replace('src="script.js"', `src="${jsUrl}"`)
+      let compiledHtml = htmlFile ? htmlFile.content : defaultHtmlContent
+      compiledHtml = compiledHtml.replace('href="styles.css"', `href="${cssUrl}"`)
+      compiledHtml = compiledHtml.replace('src="script.js"', `src="${jsUrl}"`)
 
-    setCompiledContent(compiledHtml)
+      setCompiledContent(compiledHtml)
 
-    return () => {
+      return () => {
+        if (cssBlob) URL.revokeObjectURL(cssUrl)
+        if (jsBlob) URL.revokeObjectURL(jsUrl)
+      }
+    } catch (error) {
       if (cssBlob) URL.revokeObjectURL(cssUrl)
       if (jsBlob) URL.revokeObjectURL(jsUrl)
+      return () => {}
     }
   }
 
@@ -117,7 +278,10 @@ export default function AdvancedEditor() {
     if (content !== undefined) {
       setFiles((prevFiles) => {
         const newFiles = prevFiles.map((f) => (f.id === activeFile ? { ...f, content } : f))
-        compileContent(newFiles)
+        const currentFile = newFiles.find(f => f.id === activeFile)
+        if (currentFile?.type !== 'php') {
+          compileContent(newFiles).catch(console.error)
+        }
         return newFiles
       })
     }
@@ -191,6 +355,7 @@ export default function AdvancedEditor() {
       js: "text-yellow-500",
       md: "text-purple-500",
       txt: "text-gray-500",
+      php: "text-indigo-500",
     }
     return <FileIcon className={cn("w-4 h-4 mr-2", colors[type])} />
   }
@@ -223,6 +388,9 @@ export default function AdvancedEditor() {
     URL.revokeObjectURL(url)
   }
 
+  const currentFile = files.find((f) => f.id === activeFile)
+  const isPhpFile = currentFile?.type === "php"
+
   return (
     <div className="flex flex-col lg:flex-row h-screen bg-background text-foreground pt-20 md:pt-20">
       <AnimatePresence>
@@ -243,7 +411,7 @@ export default function AdvancedEditor() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48" sideOffset={8}>
                   <AnimatePresence>
-                    {(["html", "css", "js", "md", "txt"] as FileType[]).map((type, index) => (
+                    {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type, index) => (
                       <motion.div
                         key={type}
                         initial={{ opacity: 0, y: -10 }}
@@ -288,7 +456,7 @@ export default function AdvancedEditor() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          {(["html", "css", "js", "md", "txt"] as FileType[]).map((type) => (
+                          {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type) => (
                             <DropdownMenuItem key={type} onClick={() => addFile(type, dir)}>
                               {getFileIcon(type)}
                               Новый {type.toUpperCase()} Файл
@@ -355,6 +523,27 @@ export default function AdvancedEditor() {
               {sidebarVisible ? <ChevronLeft /> : <ChevronRight />}
             </Button>
             <span className="flex-grow">{files.find((f) => f.id === activeFile)?.name}</span>
+            {isPhpFile && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => compileContent().catch(console.error)}
+                className="mr-4"
+                disabled={isPhpRunning}
+              >
+                {isPhpRunning ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
+                    Running...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Run PHP
+                  </>
+                )}
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={exportProject} className="ml-4">
               <Download className="w-4 h-4 mr-2" />
               Экспортировать проект
