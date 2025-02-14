@@ -95,6 +95,7 @@ export default function AdvancedEditor() {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [phpOutput, setPhpOutput] = useState<string>("")
   const [isPhpRunning, setIsPhpRunning] = useState(false)
+  const [previewVisible, setPreviewVisible] = useState(true)
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -122,6 +123,17 @@ export default function AdvancedEditor() {
         title: titleMatch ? titleMatch[1] : "",
         description: descriptionMatch ? descriptionMatch[1] : "",
       })
+    }
+  }, [activeFile, files])
+
+  useEffect(() => {
+    const currentFile = files.find(f => f.id === activeFile)
+    const shouldShowPreview = currentFile?.type === 'html' || currentFile?.type === 'php'
+    
+    if (window.innerWidth >= 1024) {
+      setPreviewVisible(true)
+    } else {
+      setPreviewVisible(shouldShowPreview)
     }
   }, [activeFile, files])
 
@@ -393,14 +405,14 @@ export default function AdvancedEditor() {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground pt-20 md:pt-20">
-      <div className="flex flex-col md:flex-row flex-1 h-[calc(100vh-5rem)]">
+      <div className="flex flex-col lg:flex-row flex-1">
         <AnimatePresence>
           {sidebarVisible && (
             <motion.div
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: "auto", opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="border-b md:border-r flex flex-col w-full md:w-64 bg-card"
+              className="border-b lg:border-r flex flex-col w-full lg:w-64 bg-card max-h-[40vh] lg:max-h-full overflow-auto"
             >
               <div className="h-[72px] flex items-center justify-between px-4 border-b">
                 <span className="font-medium">Файлы</span>
@@ -517,41 +529,40 @@ export default function AdvancedEditor() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex flex-col h-[60vh] md:h-full md:flex-1">
+        <div className="flex flex-col lg:flex-row flex-1 min-h-0">
+          <div className="flex flex-col flex-1 min-h-0">
             <div className="h-[72px] flex items-center px-4 border-b bg-card">
-              <Button variant="ghost" size="sm" onClick={() => setSidebarVisible(!sidebarVisible)} className="mr-4">
+              <Button variant="ghost" size="sm" onClick={() => setSidebarVisible(!sidebarVisible)} className="mr-4 shrink-0">
                 {sidebarVisible ? <ChevronLeft /> : <ChevronRight />}
               </Button>
               <span className="flex-grow truncate">{files.find((f) => f.id === activeFile)?.name}</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 {isPhpFile && (
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => compileContent().catch(console.error)}
-                    className="shrink-0"
                     disabled={isPhpRunning}
+                    className="shrink-0"
                   >
                     {isPhpRunning ? (
                       <>
                         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
-                        <span className="hidden sm:inline">Работаем...</span>
+                        <span className="hidden sm:inline">Запуск...</span>
                         <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <Play className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Запустить PHP</span>
-                        <span className="sm:hidden">Run</span>
+                        <span className="sm:hidden">Запустить</span>
                       </>
                     )}
                   </Button>
                 )}
                 <Button variant="outline" size="sm" onClick={exportProject} className="shrink-0">
                   <Download className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Экспортировать</span>
+                  <span className="hidden sm:inline">Экспортировать проект</span>
                   <span className="sm:hidden">Экспорт</span>
                 </Button>
               </div>
@@ -593,8 +604,11 @@ export default function AdvancedEditor() {
               )}
             </div>
           </div>
-
-          <div className="flex flex-col h-[40vh] md:h-full border-t md:border-l">
+          <div className={cn(
+            "flex flex-col lg:w-1/2 border-t lg:border-l min-h-[40vh] lg:min-h-0",
+            "lg:flex",
+            previewVisible ? "flex" : "hidden"
+          )}>
             <div className="h-[72px] flex items-center justify-between px-4 border-b bg-card">
               <span className="text-sm text-muted-foreground">Preview</span>
               <TooltipProvider>
