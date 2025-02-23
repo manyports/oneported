@@ -24,6 +24,31 @@ interface FileData {
   directory: string
 }
 
+interface FormInput {
+  name: string;
+  type: string;
+}
+
+function extractFormInputs(formHtml: string): FormInput[] {
+  const inputs: FormInput[] = [];
+  const inputRegex = /<input[^>]*>/g;
+  let match;
+  
+  while ((match = inputRegex.exec(formHtml)) !== null) {
+    const nameMatch = match[0].match(/name=["']([^"']+)["']/);
+    const typeMatch = match[0].match(/type=["']([^"']+)["']/);
+    
+    if (nameMatch) {
+      inputs.push({
+        name: nameMatch[1],
+        type: typeMatch ? typeMatch[1] : 'text'
+      });
+    }
+  }
+  
+  return inputs;
+}
+
 const defaultHtmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,12 +64,12 @@ const defaultHtmlContent = `<!DOCTYPE html>
 </body>
 </html>`
 
-const executePHP = async (code: string) => {
+const executePHP = async (code: string, formData: Record<string, string> = {}) => {
   try {
     const response = await fetch('/api/php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code })
+      body: JSON.stringify({ code, formData })
     })
     
     const data = await response.json()
@@ -144,7 +169,22 @@ export default function AdvancedEditor() {
     if (activePhpFile) {
       setIsPhpRunning(true)
       try {
-        const { output, error } = await executePHP(activePhpFile.content)
+        // Get form data from the iframe
+        const formData: Record<string, string> = {};
+        if (iframeRef.current) {
+          const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+          if (iframeDoc) {
+            const inputs = iframeDoc.querySelectorAll('input[name]');
+            inputs.forEach((element) => {
+              const input = element as HTMLInputElement;
+              if (input.name) {
+                formData[input.name] = input.value || '';
+              }
+            });
+          }
+        }
+
+        const { output, error } = await executePHP(activePhpFile.content, formData)
         
         const isHtmlOutput = output.trim().match(/^<!DOCTYPE|^<html/i)
         
@@ -583,7 +623,7 @@ export default function AdvancedEditor() {
                         minimap: { enabled: false },
                         fontSize: 14,
                         lineHeight: 21,
-                        padding: { top: 16, left: 20 },
+                        padding: { top: 16 },
                         fontFamily: "Geist Mono, monospace",
                         lineNumbers: "on",
                         glyphMargin: false,
