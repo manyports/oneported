@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { FileIcon, FolderIcon, Plus, ChevronLeft, ChevronRight, X, MoreVertical, Download, Play } from "lucide-react"
+import { FileIcon, FolderIcon, Plus, ChevronLeft, ChevronRight, X, MoreVertical, Download, Play, Maximize2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -217,6 +217,7 @@ export default function AdvancedEditor() {
   const [phpOutput, setPhpOutput] = useState<string>("")
   const [isPhpRunning, setIsPhpRunning] = useState(false)
   const [previewVisible, setPreviewVisible] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -759,16 +760,35 @@ export default function AdvancedEditor() {
             <div className="flex flex-col lg:w-1/2 border-t lg:border-l min-h-[40vh] lg:min-h-0">
               <div className="h-[72px] flex items-center justify-between px-4 border-b bg-card">
                 <span className="text-sm text-muted-foreground">Preview</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="text-sm font-medium cursor-help">{previewInfo.title}</div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{previewInfo.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div className="flex items-center gap-4">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-sm font-medium cursor-help">{previewInfo.title}</div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{previewInfo.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => setIsFullscreen(true)}
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Открыть в полный экран</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
               <iframe
                 ref={iframeRef}
@@ -780,6 +800,20 @@ export default function AdvancedEditor() {
           )}
         </div>
       </div>
+      <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+        <DialogContent className="max-w-[90vw] w-[90vw] h-[90vh] p-0">
+          <div className="h-[72px] flex items-center justify-between px-4 border-b">
+            <span className="text-sm font-medium">{currentFile?.name}</span>
+          </div>
+          <div className="flex-1 h-[calc(90vh-72px)]">
+            <iframe
+              title="Full Screen Preview"
+              srcDoc={compiledContent}
+              className="w-full h-full border-none bg-white"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
       <DeleteConfirmDialog
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
