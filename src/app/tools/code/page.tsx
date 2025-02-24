@@ -709,16 +709,16 @@ export default function AdvancedEditor() {
             </div>
             <div className={cn(
               "flex-1 min-h-0",
-              currentFile?.type === 'md' ? "overflow-auto" : ""
+              currentFile?.type === 'md' ? "h-full overflow-hidden" : ""
             )}>
               {currentFile && (
                 <>
                   {currentFile.type === 'md' ? (
-                    <div className="h-[calc(100vh-7rem)] overflow-auto">
+                    <div className="h-full overflow-hidden">
                       <MarkdownEditor
                         content={currentFile.content}
                         onChange={(content) => handleFileChange(content)}
-                        className="h-full"
+                        className="h-full overflow-auto"
                       />
                     </div>
                   ) : (
