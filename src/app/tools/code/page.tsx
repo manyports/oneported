@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label"
 import JSZip from "jszip"
 import { useTheme } from "next-themes"
+import { MarkdownEditor } from "@/components/markdown-editor"
 
 type FileType = "html" | "css" | "js" | "md" | "txt" | "php"
 
@@ -64,25 +65,113 @@ const defaultHtmlContent = `<!DOCTYPE html>
 </body>
 </html>`
 
+const defaultMarkdownContent = `# Welcome to Markdown Editor
+
+This is a live preview markdown editor. You can write markdown on the left side and see the preview on the right.
+
+## Features
+
+- **Bold** and *italic* text
+- Lists and checkboxes
+- [Links](https://oneported.vercel.app)
+- Code blocks with syntax highlighting
+
+\`\`\`javascript
+console.log('Hello from oneported!');
+\`\`\`
+
+## Tables
+
+| Feature | Support |
+|---------|---------|
+| Tables | ✅ |
+| Lists | ✅ |
+| Code | ✅ |
+| Math | ✅ |
+
+Enjoy writing!
+`
+
 const executePHP = async (code: string, formData: Record<string, string> = {}) => {
   try {
+    let cleanCode = code.trim();
+    
+    if (cleanCode.includes('<?php')) {
+      cleanCode = `<?php
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', '1');
+?>
+${cleanCode}`;
+    } else if (cleanCode.startsWith('<')) {
+      cleanCode = `<?php
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', '1');
+?>
+${cleanCode}`;
+    } else {
+      cleanCode = `<?php
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', '1');
+
+${cleanCode}
+?>`;
+    }
+
+    const formDataCode = Object.entries(formData).reduce((acc, [key, value]) => {
+      return acc + `$_POST['${key}'] = '${value.replace(/'/g, "\\'")}';` + "\n";
+    }, '');
+
+    cleanCode = cleanCode.replace('<?php', `<?php\n${formDataCode}`);
+
     const response = await fetch('/api/php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, formData })
-    })
+      body: JSON.stringify({ 
+        code: cleanCode,
+        formData 
+      })
+    });
     
-    const data = await response.json()
+    const data = await response.json();
+    
+    const filteredError = data.error ? 
+      data.error.split('\n')
+        .filter(line => 
+          line.includes('Fatal error:') || 
+          line.includes('Parse error:') || 
+          line.includes('Syntax error:')
+        )
+        .join('\n')
+      : '';
     
     return {
       output: data.output || '',
-      error: data.error || ''
-    }
+      error: filteredError || ''
+    };
   } catch (error) {
     return {
       output: '',
       error: `Failed to execute PHP code: ${error}`
-    }
+    };
+  }
+};
+
+function getLanguageFromType(type: FileType | undefined): string {
+  switch (type) {
+    case 'html':
+      return 'html'
+    case 'css':
+      return 'css'
+    case 'js':
+      return 'javascript'
+    case 'md':
+      return 'markdown'
+    case 'php':
+      return 'php'
+    case 'txt':
+      return 'plaintext'
+    default:
+      return 'plaintext'
   }
 }
 
@@ -108,6 +197,13 @@ export default function AdvancedEditor() {
       name: "script.js",
       content: 'console.log("Hello from oneported!");',
       type: "js",
+      directory: "src",
+    },
+    {
+      id: "4",
+      name: "README.md",
+      content: defaultMarkdownContent,
+      type: "md",
       directory: "src",
     },
   ])
@@ -169,7 +265,6 @@ export default function AdvancedEditor() {
     if (activePhpFile) {
       setIsPhpRunning(true)
       try {
-        // Get form data from the iframe
         const formData: Record<string, string> = {};
         if (iframeRef.current) {
           const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
@@ -232,15 +327,16 @@ export default function AdvancedEditor() {
                     color: #ff0000;
                     border-color: #ffcdd2;
                     background: #fff5f5;
+                    display: ${error ? 'block' : 'none'};
                   }
-                  .output:empty,
-                  .error:empty {
+                  .output:empty {
                     display: none;
                   }
                   .label {
                     font-weight: bold;
                     color: #666;
                     margin-bottom: 5px;
+                    display: ${error || output ? 'block' : 'none'};
                   }
                 </style>
               </head>
@@ -570,7 +666,10 @@ export default function AdvancedEditor() {
           )}
         </AnimatePresence>
         <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-          <div className="flex flex-col flex-1 min-h-0">
+          <div className={cn(
+            "flex flex-col flex-1 min-h-0",
+            currentFile?.type === 'md' ? "lg:h-[calc(100vh-5rem)]" : ""
+          )}>
             <div className="h-[72px] flex items-center px-4 border-b bg-card">
               <Button variant="ghost" size="sm" onClick={() => setSidebarVisible(!sidebarVisible)} className="mr-4 shrink-0">
                 {sidebarVisible ? <ChevronLeft /> : <ChevronRight />}
@@ -607,18 +706,29 @@ export default function AdvancedEditor() {
                 </Button>
               </div>
             </div>
-            <div className="flex-1 min-h-0">
-              {files.map(
-                (file) =>
-                  file.id === activeFile && (
+            <div className={cn(
+              "flex-1 min-h-0",
+              currentFile?.type === 'md' ? "overflow-auto" : ""
+            )}>
+              {currentFile && (
+                <>
+                  {currentFile.type === 'md' ? (
+                    <div className="h-[calc(100vh-7rem)] overflow-auto">
+                      <MarkdownEditor
+                        content={currentFile.content}
+                        onChange={(content) => handleFileChange(content)}
+                        className="h-full"
+                      />
+                    </div>
+                  ) : (
                     <Editor
-                      key={file.id}
                       height="100%"
-                      language={file.type}
-                      value={file.content}
+                      defaultLanguage={getLanguageFromType(currentFile.type)}
+                      language={getLanguageFromType(currentFile.type)}
+                      value={currentFile.content}
                       onChange={handleFileChange}
-                      theme={appTheme === "dark" ? "vs-dark" : "light"}
                       loading={<EditorLoading />}
+                      theme={appTheme === 'dark' ? 'vs-dark' : 'light'}
                       options={{
                         minimap: { enabled: false },
                         fontSize: 14,
@@ -640,35 +750,34 @@ export default function AdvancedEditor() {
                       }}
                       className="border-0"
                     />
-                  ),
+                  )}
+                </>
               )}
             </div>
           </div>
-          <div className={cn(
-            "flex flex-col lg:w-1/2 border-t lg:border-l min-h-[40vh] lg:min-h-0",
-            "lg:flex",
-            previewVisible ? "flex" : "hidden"
-          )}>
-            <div className="h-[72px] flex items-center justify-between px-4 border-b bg-card">
-              <span className="text-sm text-muted-foreground">Preview</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="text-sm font-medium cursor-help">{previewInfo.title}</div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{previewInfo.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          {currentFile?.type !== 'md' && previewVisible && (
+            <div className="flex flex-col lg:w-1/2 border-t lg:border-l min-h-[40vh] lg:min-h-0">
+              <div className="h-[72px] flex items-center justify-between px-4 border-b bg-card">
+                <span className="text-sm text-muted-foreground">Preview</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm font-medium cursor-help">{previewInfo.title}</div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{previewInfo.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <iframe
+                ref={iframeRef}
+                title="Preview"
+                srcDoc={compiledContent}
+                className="flex-1 w-full border-none bg-white"
+              />
             </div>
-            <iframe
-              ref={iframeRef}
-              title="Preview"
-              srcDoc={compiledContent}
-              className="flex-1 w-full border-none bg-white"
-            />
-          </div>
+          )}
         </div>
       </div>
       <DeleteConfirmDialog
