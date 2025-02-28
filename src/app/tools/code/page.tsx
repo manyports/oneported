@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { FileIcon, FolderIcon, Plus, ChevronLeft, ChevronRight, X, MoreVertical, Download, Play, Maximize2 } from "lucide-react"
+import { FileIcon, FolderIcon, Plus, ChevronLeft, ChevronRight, X, MoreVertical, Download, Play, Maximize2, History } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import JSZip from "jszip"
 import { useTheme } from "next-themes"
 import { MarkdownEditor } from "@/components/markdown-editor"
+import { Upload } from "lucide-react"
 
 type FileType = "html" | "css" | "js" | "md" | "txt" | "php"
 
@@ -28,6 +29,16 @@ interface FileData {
 interface FormInput {
   name: string;
   type: string;
+}
+
+// Update the HistoryEntry interface to include tab switch information
+interface HistoryEntry {
+  timestamp: number;
+  files: FileData[];
+  switchInfo?: {
+    from: string;
+    to: string;
+  };
 }
 
 function extractFormInputs(formHtml: string): FormInput[] {
@@ -218,6 +229,76 @@ export default function AdvancedEditor() {
   const [isPhpRunning, setIsPhpRunning] = useState(false)
   const [previewVisible, setPreviewVisible] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const zipInputRef = useRef<HTMLInputElement>(null)
+
+  // Add a ref to track the previous active file
+  const prevActiveFileRef = useRef<string>(activeFile);
+
+  // Load files from localStorage on initial render
+  useEffect(() => {
+    const savedFiles = localStorage.getItem('code-editor-files')
+    if (savedFiles) {
+      try {
+        setFiles(JSON.parse(savedFiles))
+      } catch (e) {
+        console.error('Failed to parse saved files', e)
+      }
+    }
+
+    const savedHistory = localStorage.getItem('code-editor-history')
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory))
+      } catch (e) {
+        console.error('Failed to parse saved history', e)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+      // Still save files to localStorage periodically, but don't create history entries
+      if (files.length > 0) {
+        localStorage.setItem('code-editor-files', JSON.stringify(files))
+      }
+    }, 60000) // Save files every minute
+    
+    return () => clearInterval(saveInterval)
+  }, [files])
+  
+  // Add new effect to save history on tab switches
+  useEffect(() => {
+    // Skip on initial render
+    if (prevActiveFileRef.current !== activeFile && files.length > 0) {
+      const prevFile = files.find(f => f.id === prevActiveFileRef.current);
+      const currentFile = files.find(f => f.id === activeFile);
+      
+      if (prevFile && currentFile) {
+        const switchDescription = `${prevFile.name} → ${currentFile.name}`;
+        
+        const newHistoryEntry = {
+          timestamp: Date.now(),
+          files: JSON.parse(JSON.stringify(files)), // Deep copy
+          switchInfo: {
+            from: prevFile.name,
+            to: currentFile.name
+          }
+        };
+        
+        setHistory(prev => {
+          const updatedHistory = [...prev, newHistoryEntry].slice(-30);
+          localStorage.setItem('code-editor-history', JSON.stringify(updatedHistory));
+          return updatedHistory;
+        });
+      }
+    }
+    
+    // Update ref for next comparison
+    prevActiveFileRef.current = activeFile;
+  }, [activeFile, files]);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -262,7 +343,7 @@ export default function AdvancedEditor() {
   const compileContent = async (currentFiles = files) => {
     const phpFiles = currentFiles.filter(f => f.type === "php")
     const activePhpFile = phpFiles.find(f => f.id === activeFile)
-
+  
     if (activePhpFile) {
       setIsPhpRunning(true)
       try {
@@ -279,7 +360,7 @@ export default function AdvancedEditor() {
             });
           }
         }
-
+  
         const { output, error } = await executePHP(activePhpFile.content, formData)
         
         const isHtmlOutput = output.trim().match(/^<!DOCTYPE|^<html/i)
@@ -389,29 +470,32 @@ export default function AdvancedEditor() {
         setIsPhpRunning(false)
       }
     }
-
-    const htmlFile = currentFiles.find((f) => f.type === "html")
+  
+    // Find the active HTML file instead of just any HTML file
+    const activeHtmlFile = currentFiles.find(f => f.id === activeFile && f.type === "html")
+    // Fall back to any HTML file if the active file isn't HTML
+    const htmlFile = activeHtmlFile || currentFiles.find((f) => f.type === "html")
     const cssFile = currentFiles.find((f) => f.type === "css")
     const jsFile = currentFiles.find((f) => f.type === "js")
-
+  
     let cssUrl = ""
     let jsUrl = ""
     let cssBlob: Blob | null = null
     let jsBlob: Blob | null = null
-
+  
     try {
       cssBlob = cssFile ? new Blob([cssFile.content], { type: "text/css" }) : null
       cssUrl = cssBlob ? URL.createObjectURL(cssBlob) : ""
-
+  
       jsBlob = jsFile ? new Blob([jsFile.content], { type: "application/javascript" }) : null
       jsUrl = jsBlob ? URL.createObjectURL(jsBlob) : ""
-
+  
       let compiledHtml = htmlFile ? htmlFile.content : defaultHtmlContent
       compiledHtml = compiledHtml.replace('href="styles.css"', `href="${cssUrl}"`)
       compiledHtml = compiledHtml.replace('src="script.js"', `src="${jsUrl}"`)
-
+  
       setCompiledContent(compiledHtml)
-
+  
       return () => {
         if (cssBlob) URL.revokeObjectURL(cssUrl)
         if (jsBlob) URL.revokeObjectURL(jsUrl)
@@ -540,6 +624,255 @@ export default function AdvancedEditor() {
   const currentFile = files.find((f) => f.id === activeFile)
   const isPhpFile = currentFile?.type === "php"
 
+  const handleImportDirectory = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFiles = e.target.files  // Renamed to avoid shadowing state variable
+    if (!uploadedFiles || uploadedFiles.length === 0) return
+    
+    const newFiles: FileData[] = []
+    // Use component's files state variable, not the input's FileList
+    const existingIds = new Set(files.map(f => f.id))  
+    let newIdCounter = Math.max(...files.map((f) => Number.parseInt(f.id))) + 1
+    
+    const fileReaders: Promise<void>[] = []
+    
+    Array.from(uploadedFiles).forEach((file) => {
+      const reader = new FileReader()
+      
+      const filePromise = new Promise<void>((resolve) => {
+        reader.onload = (e) => {
+          const content = e.target?.result as string || ""
+          
+          // Extract the directory path and filename
+          const relativePath = file.webkitRelativePath
+          const pathParts = relativePath.split('/')
+          const fileName = pathParts.pop() || ""
+          const directory = pathParts.join('/')
+          
+          // Determine file type based on extension
+          const extension = fileName.split('.').pop()?.toLowerCase() as FileType || "txt"
+          const fileType = ["html", "css", "js", "md", "txt", "php"].includes(extension) 
+            ? extension as FileType 
+            : "txt"
+          
+          const newId = (newIdCounter++).toString()
+          
+          newFiles.push({
+            id: newId,
+            name: fileName,
+            content,
+            type: fileType,
+            directory,
+          })
+          
+          resolve()
+        }
+        
+        reader.readAsText(file)
+      })
+      
+      fileReaders.push(filePromise)
+    })
+    
+    Promise.all(fileReaders).then(() => {
+      // For each directory, add a directory marker file if it doesn't exist
+      const directories = new Set(newFiles.map(f => f.directory))
+      
+      directories.forEach(dir => {
+        if (dir) {
+          const dirParts = dir.split('/')
+          let currentPath = ""
+          
+          dirParts.forEach(part => {
+            if (currentPath) currentPath += '/'
+            currentPath += part
+            
+            // Check if we already have this directory
+            const directoryExists = newFiles.some(f => 
+              f.directory === currentPath && f.name === ".directory"
+            ) || files.some(f => 
+              f.directory === currentPath && f.name === ".directory"
+            )
+            
+            if (!directoryExists) {
+              const newId = (newIdCounter++).toString()
+              newFiles.push({
+                id: newId,
+                name: ".directory",
+                content: "",
+                type: "txt",
+                directory: currentPath,
+              })
+            }
+          })
+        }
+      })
+      
+      setFiles(prevFiles => [...prevFiles, ...newFiles])
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    })
+  }
+
+  const handleImportZip = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const zipFile = e.target.files?.[0]
+    if (!zipFile) return
+    
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      try {
+        const zipContent = event.target?.result
+        if (!zipContent) return
+        
+        const zip = new JSZip()
+        const contents = await zip.loadAsync(zipContent)
+        const newFiles: FileData[] = []
+        const directories = new Set<string>()
+        let newIdCounter = Math.max(...files.map((f) => Number.parseInt(f.id))) + 1
+        
+        // Extract all files from the zip
+        const extractPromises: Promise<void>[] = []
+        
+        contents.forEach((relativePath, file) => {
+          if (file.dir) {
+            directories.add(relativePath.replace(/\/$/, '')) // Remove trailing slash
+            return
+          }
+          
+          const extractPromise = async () => {
+            const content = await file.async('text')
+            
+            // Extract directory path and filename
+            const pathParts = relativePath.split('/')
+            const fileName = pathParts.pop() || ""
+            const directory = pathParts.join('/')
+            
+            if (directory) directories.add(directory)
+            
+            // Determine file type based on extension
+            const extension = fileName.split('.').pop()?.toLowerCase() as FileType || "txt"
+            const fileType = ["html", "css", "js", "md", "txt", "php"].includes(extension) 
+              ? extension as FileType 
+              : "txt"
+            
+            const newId = (newIdCounter++).toString()
+            
+            newFiles.push({
+              id: newId,
+              name: fileName,
+              content,
+              type: fileType,
+              directory,
+            })
+          }
+          
+          extractPromises.push(extractPromise())
+        })
+        
+        await Promise.all(extractPromises)
+        
+        // Create directory marker files for all directories
+        directories.forEach(dir => {
+          if (dir) {
+            const dirParts = dir.split('/')
+            let currentPath = ""
+            
+            dirParts.forEach(part => {
+              if (currentPath) currentPath += '/'
+              currentPath += part
+              
+              // Check if we already have this directory
+              const directoryExists = newFiles.some(f => 
+                f.directory === currentPath && f.name === ".directory"
+              ) || files.some(f => 
+                f.directory === currentPath && f.name === ".directory"
+              )
+              
+              if (!directoryExists) {
+                const newId = (newIdCounter++).toString()
+                newFiles.push({
+                  id: newId,
+                  name: ".directory",
+                  content: "",
+                  type: "txt",
+                  directory: currentPath,
+                })
+              }
+            })
+          }
+        })
+        
+        setFiles(prevFiles => [...prevFiles, ...newFiles])
+        if (e.target) e.target.value = ""
+      } catch (error) {
+        console.error("Error importing ZIP file:", error)
+      }
+    }
+    
+    reader.readAsArrayBuffer(zipFile)
+  }
+
+  const restoreFromHistory = (entry: HistoryEntry) => {
+    setFiles(entry.files)
+    setHistoryOpen(false)
+  }
+
+  const deleteHistoryEntry = (timestamp: number) => {
+    setHistory(prev => {
+      const updatedHistory = prev.filter(entry => entry.timestamp !== timestamp);
+      localStorage.setItem('code-editor-history', JSON.stringify(updatedHistory));
+      return updatedHistory;
+    });
+  }
+
+  const clearAllHistory = () => {
+    // Define default files structure
+    const defaultFiles = [
+      {
+        id: "1",
+        name: "index.html",
+        content: defaultHtmlContent,
+        type: "html" as FileType,
+        directory: "src",
+      },
+      {
+        id: "2",
+        name: "styles.css",
+        content: "body {\n  font-family: -apple-system, system-ui, sans-serif;\n  padding: 2rem;\n}",
+        type: "css" as FileType,
+        directory: "src",
+      },
+      {
+        id: "3",
+        name: "script.js",
+        content: 'console.log("Hello from oneported!");',
+        type: "js" as FileType,
+        directory: "src",
+      },
+      {
+        id: "4",
+        name: "README.md",
+        content: defaultMarkdownContent,
+        type: "md" as FileType,
+        directory: "src",
+      },
+    ];
+    
+    // Reset files to default
+    setFiles(defaultFiles);
+    
+    // Clear history
+    setHistory([]);
+    
+    // Update localStorage
+    localStorage.removeItem('code-editor-history');
+    localStorage.setItem('code-editor-files', JSON.stringify(defaultFiles));
+
+    
+    setHistoryOpen(false);
+    
+    // Set active file to the first one (index.html)
+    setActiveFile("1");
+  }
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground pt-20 md:pt-20">
       <div className="flex flex-col lg:flex-row flex-1">
@@ -553,42 +886,110 @@ export default function AdvancedEditor() {
             >
               <div className="h-[72px] flex items-center justify-between px-4 border-b">
                 <span className="font-medium">Файлы</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48" sideOffset={8}>
-                    <AnimatePresence>
-                      {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type, index) => (
+                <div className="flex items-center">
+                  {/* History button */}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 mr-1"
+                    onClick={() => setHistoryOpen(true)}
+                    disabled={history.length === 0}
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                
+                  {/* Import button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 mr-1"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Импортировать директорию</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 mr-1"
+                          onClick={() => zipInputRef.current?.click()}
+                        >
+                          <FileIcon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Импортировать ZIP архив</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {/* Hidden file inputs */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImportDirectory}
+                    className="hidden"
+                    webkitdirectory=""
+                    directory=""
+                    multiple
+                  />
+                  <input
+                    type="file"
+                    ref={zipInputRef}
+                    onChange={handleImportZip}
+                    className="hidden"
+                    accept=".zip"
+                  />
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48" sideOffset={8}>
+                      <AnimatePresence>
+                        {(["html", "css", "js", "php", "md", "txt"] as FileType[]).map((type, index) => (
+                          <motion.div
+                            key={type}
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <DropdownMenuItem onClick={() => addFile(type)}>
+                              {getFileIcon(type)}
+                              Новый {type.toUpperCase()} Файл
+                            </DropdownMenuItem>
+                          </motion.div>
+                        ))}
                         <motion.div
-                          key={type}
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          transition={{ delay: index * 0.05 }}
+                          transition={{ delay: 5 * 0.05 }}
                         >
-                          <DropdownMenuItem onClick={() => addFile(type)}>
-                            {getFileIcon(type)}
-                            Новый {type.toUpperCase()} Файл
+                          <DropdownMenuItem onClick={() => addDirectory()}>
+                            <FolderIcon className="w-4 h-4 mr-2" />
+                            Новая директория
                           </DropdownMenuItem>
                         </motion.div>
-                      ))}
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ delay: 5 * 0.05 }}
-                      >
-                        <DropdownMenuItem onClick={() => addDirectory()}>
-                          <FolderIcon className="w-4 h-4 mr-2" />
-                          Новая директория
-                        </DropdownMenuItem>
-                      </motion.div>
-                    </AnimatePresence>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      </AnimatePresence>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
               <div className="flex-1 overflow-auto p-2">
                 {getDirectories().map((dir) => (
@@ -693,17 +1094,36 @@ export default function AdvancedEditor() {
                       </>
                     ) : (
                       <>
-                        <Play className="w-4 h-4 mr-2" />
+                        <Play className="w-4 h-4" />
                         <span className="hidden sm:inline">Запустить PHP</span>
-                        <span className="sm:hidden">Запустить</span>
                       </>
                     )}
                   </Button>
                 )}
                 <Button variant="outline" size="sm" onClick={exportProject} className="shrink-0">
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download className="w-4 h-4 sm:hidden" />
+                  <Download className="w-4 h-4 mr-2 hidden sm:inline" />
                   <span className="hidden sm:inline">Экспортировать проект</span>
-                  <span className="sm:hidden">Экспорт</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    const newHistoryEntry = {
+                      timestamp: Date.now(),
+                      files: JSON.parse(JSON.stringify(files)), 
+                    }
+                    setHistory(prev => {
+                      const updatedHistory = [...prev, newHistoryEntry].slice(-30)
+                      localStorage.setItem('code-editor-history', JSON.stringify(updatedHistory))
+                      return updatedHistory
+                    })
+                  }} 
+                  className="shrink-0"
+                >
+                  <History className="w-4 h-4 sm:hidden" />
+                  <History className="w-4 h-4 mr-2 hidden sm:inline" />
+                  <span className="hidden sm:inline">Запомнить</span>
                 </Button>
               </div>
             </div>
@@ -811,6 +1231,69 @@ export default function AdvancedEditor() {
               srcDoc={compiledContent}
               className="w-full h-full border-none bg-white"
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <div className="flex justify-between items-center">
+              <DialogTitle>Code History</DialogTitle>
+              {history.length > 0 && (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={clearAllHistory}
+                  className="border mt-4"
+                >
+                  Очистить
+                </Button>
+              )}
+            </div>
+            <DialogDescription>
+              Нажмите на предыдущую версию для возврата
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {history.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                У вас нет истории. Кликните на другой файл / Запомните сами. 
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {[...history].reverse().map((entry, index) => (
+                  <div key={entry.timestamp} className="flex justify-between items-center border rounded-md p-3 hover:bg-accent">
+                    <div>
+                      <div className="font-medium">
+                        {entry.switchInfo ? 
+                          `Переход с: ${entry.switchInfo.from} → ${entry.switchInfo.to}` : 
+                          `Сохранение ${history.length - index}`
+                        }
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(entry.timestamp).toLocaleString()}
+                      </div>
+                      <div className="text-sm">
+                        {entry.files.filter(f => f.name !== ".directory").length} files
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => restoreFromHistory(entry)} variant="outline">
+                        Вернуться
+                      </Button>
+                      <Button 
+                        onClick={() => deleteHistoryEntry(entry.timestamp)} 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
