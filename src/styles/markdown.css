@@ -1,4 +1,3 @@
-/* Light theme syntax highlighting */
 .hljs {
   color: #383a42;
   background: #fafafa;
@@ -74,7 +73,6 @@
   text-decoration: underline;
 }
 
-/* Dark theme syntax highlighting */
 :root[class~="dark"] .hljs {
   color: #abb2bf;
   background: #282c34;

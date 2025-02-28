@@ -1,4 +1,3 @@
-// app/api/submit-mentor/route.ts
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 

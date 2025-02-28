@@ -31,7 +31,6 @@ interface FormInput {
   type: string;
 }
 
-// Update the HistoryEntry interface to include tab switch information
 interface HistoryEntry {
   timestamp: number;
   files: FileData[];
@@ -234,10 +233,8 @@ export default function AdvancedEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const zipInputRef = useRef<HTMLInputElement>(null)
 
-  // Add a ref to track the previous active file
   const prevActiveFileRef = useRef<string>(activeFile);
 
-  // Load files from localStorage on initial render
   useEffect(() => {
     const savedFiles = localStorage.getItem('code-editor-files')
     if (savedFiles) {
@@ -260,18 +257,15 @@ export default function AdvancedEditor() {
 
   useEffect(() => {
     const saveInterval = setInterval(() => {
-      // Still save files to localStorage periodically, but don't create history entries
       if (files.length > 0) {
         localStorage.setItem('code-editor-files', JSON.stringify(files))
       }
-    }, 60000) // Save files every minute
+    }, 60000) 
     
     return () => clearInterval(saveInterval)
   }, [files])
   
-  // Add new effect to save history on tab switches
   useEffect(() => {
-    // Skip on initial render
     if (prevActiveFileRef.current !== activeFile && files.length > 0) {
       const prevFile = files.find(f => f.id === prevActiveFileRef.current);
       const currentFile = files.find(f => f.id === activeFile);
@@ -281,7 +275,7 @@ export default function AdvancedEditor() {
         
         const newHistoryEntry = {
           timestamp: Date.now(),
-          files: JSON.parse(JSON.stringify(files)), // Deep copy
+          files: JSON.parse(JSON.stringify(files)),
           switchInfo: {
             from: prevFile.name,
             to: currentFile.name
@@ -296,7 +290,6 @@ export default function AdvancedEditor() {
       }
     }
     
-    // Update ref for next comparison
     prevActiveFileRef.current = activeFile;
   }, [activeFile, files]);
 
@@ -471,9 +464,7 @@ export default function AdvancedEditor() {
       }
     }
   
-    // Find the active HTML file instead of just any HTML file
     const activeHtmlFile = currentFiles.find(f => f.id === activeFile && f.type === "html")
-    // Fall back to any HTML file if the active file isn't HTML
     const htmlFile = activeHtmlFile || currentFiles.find((f) => f.type === "html")
     const cssFile = currentFiles.find((f) => f.type === "css")
     const jsFile = currentFiles.find((f) => f.type === "js")
@@ -625,11 +616,10 @@ export default function AdvancedEditor() {
   const isPhpFile = currentFile?.type === "php"
 
   const handleImportDirectory = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFiles = e.target.files  // Renamed to avoid shadowing state variable
+    const uploadedFiles = e.target.files  
     if (!uploadedFiles || uploadedFiles.length === 0) return
     
     const newFiles: FileData[] = []
-    // Use component's files state variable, not the input's FileList
     const existingIds = new Set(files.map(f => f.id))  
     let newIdCounter = Math.max(...files.map((f) => Number.parseInt(f.id))) + 1
     
@@ -642,13 +632,11 @@ export default function AdvancedEditor() {
         reader.onload = (e) => {
           const content = e.target?.result as string || ""
           
-          // Extract the directory path and filename
           const relativePath = file.webkitRelativePath
           const pathParts = relativePath.split('/')
           const fileName = pathParts.pop() || ""
           const directory = pathParts.join('/')
           
-          // Determine file type based on extension
           const extension = fileName.split('.').pop()?.toLowerCase() as FileType || "txt"
           const fileType = ["html", "css", "js", "md", "txt", "php"].includes(extension) 
             ? extension as FileType 
@@ -674,7 +662,6 @@ export default function AdvancedEditor() {
     })
     
     Promise.all(fileReaders).then(() => {
-      // For each directory, add a directory marker file if it doesn't exist
       const directories = new Set(newFiles.map(f => f.directory))
       
       directories.forEach(dir => {
@@ -686,7 +673,6 @@ export default function AdvancedEditor() {
             if (currentPath) currentPath += '/'
             currentPath += part
             
-            // Check if we already have this directory
             const directoryExists = newFiles.some(f => 
               f.directory === currentPath && f.name === ".directory"
             ) || files.some(f => 
@@ -728,26 +714,23 @@ export default function AdvancedEditor() {
         const directories = new Set<string>()
         let newIdCounter = Math.max(...files.map((f) => Number.parseInt(f.id))) + 1
         
-        // Extract all files from the zip
         const extractPromises: Promise<void>[] = []
         
         contents.forEach((relativePath, file) => {
           if (file.dir) {
-            directories.add(relativePath.replace(/\/$/, '')) // Remove trailing slash
+            directories.add(relativePath.replace(/\/$/, '')) 
             return
           }
           
           const extractPromise = async () => {
             const content = await file.async('text')
             
-            // Extract directory path and filename
             const pathParts = relativePath.split('/')
             const fileName = pathParts.pop() || ""
             const directory = pathParts.join('/')
             
             if (directory) directories.add(directory)
             
-            // Determine file type based on extension
             const extension = fileName.split('.').pop()?.toLowerCase() as FileType || "txt"
             const fileType = ["html", "css", "js", "md", "txt", "php"].includes(extension) 
               ? extension as FileType 
@@ -769,7 +752,6 @@ export default function AdvancedEditor() {
         
         await Promise.all(extractPromises)
         
-        // Create directory marker files for all directories
         directories.forEach(dir => {
           if (dir) {
             const dirParts = dir.split('/')
@@ -779,7 +761,6 @@ export default function AdvancedEditor() {
               if (currentPath) currentPath += '/'
               currentPath += part
               
-              // Check if we already have this directory
               const directoryExists = newFiles.some(f => 
                 f.directory === currentPath && f.name === ".directory"
               ) || files.some(f => 
@@ -824,7 +805,6 @@ export default function AdvancedEditor() {
   }
 
   const clearAllHistory = () => {
-    // Define default files structure
     const defaultFiles = [
       {
         id: "1",
@@ -856,20 +836,16 @@ export default function AdvancedEditor() {
       },
     ];
     
-    // Reset files to default
     setFiles(defaultFiles);
     
-    // Clear history
     setHistory([]);
     
-    // Update localStorage
     localStorage.removeItem('code-editor-history');
     localStorage.setItem('code-editor-files', JSON.stringify(defaultFiles));
 
     
     setHistoryOpen(false);
     
-    // Set active file to the first one (index.html)
     setActiveFile("1");
   }
 
@@ -887,7 +863,6 @@ export default function AdvancedEditor() {
               <div className="h-[72px] flex items-center justify-between px-4 border-b">
                 <span className="font-medium">Файлы</span>
                 <div className="flex items-center">
-                  {/* History button */}
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -898,7 +873,6 @@ export default function AdvancedEditor() {
                     <History className="h-4 w-4" />
                   </Button>
                 
-                  {/* Import button */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -935,7 +909,6 @@ export default function AdvancedEditor() {
                     </Tooltip>
                   </TooltipProvider>
 
-                  {/* Hidden file inputs */}
                   <input
                     type="file"
                     ref={fileInputRef}
