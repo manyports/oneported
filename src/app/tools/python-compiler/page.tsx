@@ -153,13 +153,13 @@ export default function PythonCompiler() {
   }
 
   const clearCode = () => {
-    if (window.confirm("Are you sure you want to clear the current code?")) {
+    if (window.confirm("Вы уверены, что хотите очистить текущий код?")) {
       setCode('');
     }
   }
 
   const resetCode = () => {
-    if (window.confirm("Are you sure you want to reset to the default code? This will lose any unsaved changes.")) {
+    if (window.confirm("Вы уверены, что хотите сбросить код до исходного значения? Это приведет к потере всех несохраненных изменений.")) {
       setCode(defaultPythonContent);
     }
   }
@@ -178,9 +178,9 @@ export default function PythonCompiler() {
 
   const copyCode = () => {
     navigator.clipboard.writeText(code).then(() => {
-      alert("Code copied to clipboard!");
+      alert("Код скопирован в буфер обмена!");
     }).catch(err => {
-      console.error('Failed to copy code: ', err);
+      console.error('Не удалось скопировать код: ', err);
     });
   }
 
@@ -271,7 +271,7 @@ export default function PythonCompiler() {
               )}
             >
               <Play className={cn("h-4 w-4", isRunning && "animate-spin")} />
-              <span className="md:inline hidden">Запустить</span>
+              <span className="md:inline hidden text-primary-foreground">Запустить</span>
             </Button>
             
             <Button 
@@ -334,7 +334,7 @@ export default function PythonCompiler() {
                 disabled={isRunning}
                 className={`
                   inline-flex items-center gap-2 px-3 py-1.5 rounded-md
-                  text-sm font-medium text-white bg-primary
+                  text-sm font-medium text-primary-foreground bg-primary
                   hover:bg-primary/90 
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                   transition-all duration-200
